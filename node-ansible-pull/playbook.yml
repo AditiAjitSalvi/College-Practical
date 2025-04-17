@@ -1,8 +1,8 @@
 - name: Run Node.js App
   hosts: localhost
   become: yes
-  tasks:
 
+  tasks:
     - name: Install Node.js and npm
       apt:
         name:
