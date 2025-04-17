@@ -2,26 +2,33 @@
   hosts: localhost
   become: yes
   tasks:
-    # Step 1: Install Node.js and npm
+    # Step 1: Fix broken dependencies
+    - name: Fix broken dependencies
+      command: apt-get --yes --fix-broken install
+      become: yes
+
+    # Step 2: Add NodeSource repository and install Node.js and npm
+    - name: Add NodeSource repository
+      apt_repository:
+        repo: 'deb https://deb.nodesource.com/node_16.x focal main'
+        state: present
+      become: yes
+
     - name: Install Node.js and npm
       apt:
-        name: nodejs
+        name:
+          - nodejs
+          - npm
         state: present
-      tags: node
+      become: yes
 
-    - name: Install npm
-      apt:
-        name: npm
-        state: present
-      tags: node
-
-    # Step 2: Ensure app directory exists
+    # Step 3: Ensure app directory exists
     - name: Ensure app directory exists
       file:
         path: /opt/node-app
         state: directory
 
-    # Step 3: Pull or Copy app files from GitHub
+    # Step 4: Pull app files from GitHub
     - name: Pull app files from GitHub
       git:
         repo: "https://github.com/AditiAjitSalvi/College-Practical.git"
@@ -29,13 +36,13 @@
         version: master
         force: yes
 
-    # Step 4: Install dependencies (if any)
+    # Step 5: Install dependencies (if any)
     - name: Install dependencies (if any)
       command: npm install
       args:
         chdir: /opt/node-app/
 
-    # Step 5: Run the Node.js app (index.js)
+    # Step 6: Run the Node.js app
     - name: Run the Node.js app
       command: /usr/bin/node /opt/node-app/app/index.js
       async: 0
