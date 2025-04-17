@@ -1,7 +1,6 @@
 - name: Deploy Node.js App
   hosts: localhost
-  become: yes  # Ensure we are using sudo for necessary tasks
-
+  become: yes  # This will use sudo without asking for a password
   tasks:
     - name: Install Node.js and npm
       apt:
