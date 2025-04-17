@@ -1,7 +1,8 @@
 - name: Deploy Node.js App
   hosts: localhost
-  become: yes  # This will use sudo without asking for a password
+  become: yes
   tasks:
+    # Step 1: Install Node.js and npm
     - name: Install Node.js and npm
       apt:
         name: nodejs
@@ -14,44 +15,29 @@
         state: present
       tags: node
 
+    # Step 2: Ensure app directory exists
     - name: Ensure app directory exists
       file:
         path: /opt/node-app
         state: directory
 
-    - name: Copy app files
-      copy:
-        src: app/
-        dest: /opt/node-app/
-        mode: 0755
+    # Step 3: Pull or Copy app files from GitHub
+    - name: Pull app files from GitHub
+      git:
+        repo: "https://github.com/AditiAjitSalvi/College-Practical.git"
+        dest: /opt/node-app
+        version: master
+        force: yes
 
+    # Step 4: Install dependencies (if any)
     - name: Install dependencies (if any)
       command: npm install
       args:
         chdir: /opt/node-app/
 
-    - name: Create systemd service
-      copy:
-        dest: /etc/systemd/system/nodeapp.service
-        content: |
-          [Unit]
-          Description=Node.js App
-
-          [Service]
-          ExecStart=/usr/bin/node /opt/node-app/index.js
-          Restart=always
-          User=nobody
-          Environment=PORT=3000
-
-          [Install]
-          WantedBy=multi-user.target
-
-    - name: Reload systemd
-      systemd:
-        daemon_reload: yes
-
-    - name: Enable and start Node.js app
-      systemd:
-        name: nodeapp
-        enabled: yes
-        state: restarted
+    # Step 5: Run the Node.js app (index.js)
+    - name: Run the Node.js app
+      command: /usr/bin/node /opt/node-app/app/index.js
+      async: 0
+      poll: 0
+      tags: run-app
