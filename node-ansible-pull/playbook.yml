@@ -1,18 +1,7 @@
-- name: Deploy Node.js App
+- name: Run Node.js App
   hosts: localhost
   become: yes
   tasks:
-    # Step 1: Fix broken dependencies
-    - name: Fix broken dependencies
-      command: apt-get --yes --fix-broken install
-      become: yes
-
-    # Step 2: Add NodeSource repository and install Node.js and npm
-    - name: Add NodeSource repository
-      apt_repository:
-        repo: 'deb https://deb.nodesource.com/node_16.x focal main'
-        state: present
-      become: yes
 
     - name: Install Node.js and npm
       apt:
@@ -20,31 +9,20 @@
           - nodejs
           - npm
         state: present
-      become: yes
+      update_cache: yes
 
-    # Step 3: Ensure app directory exists
-    - name: Ensure app directory exists
-      file:
-        path: /opt/node-app
-        state: directory
-
-    # Step 4: Pull app files from GitHub
-    - name: Pull app files from GitHub
+    - name: Clone the GitHub repository
       git:
         repo: "https://github.com/AditiAjitSalvi/College-Practical.git"
         dest: /opt/node-app
-        version: master
         force: yes
 
-    # Step 5: Install dependencies (if any)
-    - name: Install dependencies (if any)
+    - name: Install app dependencies
       command: npm install
       args:
-        chdir: /opt/node-app/
+        chdir: /opt/node-app/app
 
-    # Step 6: Run the Node.js app
     - name: Run the Node.js app
-      command: /usr/bin/node /opt/node-app/app/index.js
-      async: 0
-      poll: 0
-      tags: run-app
+      command: node index.js
+      args:
+        chdir: /opt/node-app/app
