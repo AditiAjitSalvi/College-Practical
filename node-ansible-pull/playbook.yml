@@ -6,11 +6,15 @@
       apt:
         update_cache: yes
 
-    - name: Install Node.js from NodeSource repository
+    - name: Install curl (if not already installed)
       apt:
-        name: "https://deb.nodesource.com/setup_16.x"
+        name: curl
         state: present
-        update_cache: yes
+
+    - name: Download and run the NodeSource setup script for Node.js 16.x
+      shell: curl -sL https://deb.nodesource.com/setup_16.x | bash -
+      args:
+        creates: /etc/apt/sources.list.d/nodesource.list  # Skip if already set up
 
     - name: Install Node.js and npm
       apt:
