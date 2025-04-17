@@ -1,6 +1,6 @@
 - name: Deploy Node.js App
   hosts: localhost
-  become: yes
+  become: yes  # Ensure we are using sudo for necessary tasks
 
   tasks:
     - name: Install Node.js and npm
