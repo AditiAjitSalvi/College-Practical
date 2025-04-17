@@ -1,58 +1,31 @@
-- name: Deploy Node.js App
+- name: Run Node.js App
   hosts: localhost
   become: yes
 
   tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
     - name: Install Node.js and npm
       apt:
-        name: nodejs
+        name:
+          - nodejs
+          - npm
         state: present
-      tags: node
 
-    - name: Install npm
-      apt:
-        name: npm
-        state: present
-      tags: node
+    - name: Clone the GitHub repository
+      git:
+        repo: "https://github.com/AditiAjitSalvi/College-Practical.git"
+        dest: /opt/node-app
+        force: yes
 
-    - name: Ensure app directory exists
-      file:
-        path: /opt/node-app
-        state: directory
-
-    - name: Copy app files
-      copy:
-        src: app/
-        dest: /opt/node-app/
-        mode: 0755
-
-    - name: Install dependencies (if any)
+    - name: Install app dependencies
       command: npm install
       args:
-        chdir: /opt/node-app/
+        chdir: /opt/node-app/app
 
-    - name: Create systemd service
-      copy:
-        dest: /etc/systemd/system/nodeapp.service
-        content: |
-          [Unit]
-          Description=Node.js App
-
-          [Service]
-          ExecStart=/usr/bin/node /opt/node-app/index.js
-          Restart=always
-          User=nobody
-          Environment=PORT=3000
-
-          [Install]
-          WantedBy=multi-user.target
-
-    - name: Reload systemd
-      systemd:
-        daemon_reload: yes
-
-    - name: Enable and start Node.js app
-      systemd:
-        name: nodeapp
-        enabled: yes
-        state: restarted
+    - name: Run the Node.js app
+      command: node index.js
+      args:
+        chdir: /opt/node-app/app
